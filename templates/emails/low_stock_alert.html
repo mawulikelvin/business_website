@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Low Stock Alert - Nicky G. Computers</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #DC2626; color: white; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 20px; }
+        .alert-item { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #DC2626; }
+        .stock-level { font-weight: bold; color: #DC2626; }
+        .footer { text-align: center; padding: 20px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚠️ Low Stock Alert</h1>
+            <p>Nicky G. Computers</p>
+        </div>
+        
+        <div class="content">
+            <h2>Products Running Low</h2>
+            <p>The following products need restocking:</p>
+            
+            {% for product in low_stock_products %}
+            <div class="alert-item">
+                <p><strong>{{ product.name }}</strong></p>
+                <p>Current Stock: <span class="stock-level">{{ product.stock }} units</span></p>
+                <p>Category: {{ product.category.name }}</p>
+                <p>Price: GH₵ {{ product.price }}</p>
+            </div>
+            {% endfor %}
+            
+            <h3>Action Required:</h3>
+            <ul>
+                <li>Contact suppliers for restocking</li>
+                <li>Update product availability on website</li>
+                <li>Consider removing from featured products if out of stock</li>
+                <li>Notify customers with pending orders</li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated stock alert from your Nicky G. Computers website.</p>
+            <p>📱 WhatsApp: 0204288305 | 📧 nickygcomputers@gmail.com</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,666 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Nicky G. Computers - Computers, Phones & IT Services in Wa, Ghana{% endblock %}</title>
+    <meta name="description" content="Nicky G. Computers offers computers, phones, accessories, repairs, internet cafe, and WAEC registration services in Wa, Upper West Region, Ghana.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="{% static 'images/logo.jpg' %}">
+    <link rel="shortcut icon" type="image/jpeg" href="{% static 'images/logo.jpg' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/logo.jpg' %}">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'nicky-blue': '#1E3A8A',
+                        'nicky-red': '#DC2626', 
+                        'nicky-yellow': '#FCD34D',
+                        'nicky-light-blue': '#3B82F6'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Alpine.js for interactive components -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style>
+        /* Prevent Alpine.js flash of unstyled content */
+        [x-cloak] { display: none !important; }
+    </style>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50 font-sans" x-data="{ mobileMenuOpen: false, cartOpen: false, searchOpen: false }">
+    <!-- Navigation Header -->
+    <header class="bg-white shadow-lg fixed top-0 left-0 right-0 z-50">
+        <nav class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="{% url 'home' %}" class="flex items-center space-x-3">
+                        <img src="{% static 'images/logo.jpg' %}" alt="Nicky G. Computers Logo" class="h-12 w-auto">
+                        <div class="hidden sm:block">
+                            <div class="text-lg font-bold text-nicky-blue leading-none">NickyG</div>
+                            <div class="text-xs text-nicky-blue font-medium leading-none mt-1">COMPUTERS</div>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}text-nicky-blue font-bold{% else %}text-gray-700 hover:text-nicky-blue font-medium{% endif %} transition-colors relative group">
+                        Home
+                        <span class="absolute bottom-0 left-0 {% if request.resolver_match.url_name == 'home' %}w-full{% else %}w-0 group-hover:w-full{% endif %} h-0.5 bg-nicky-red transition-all"></span>
+                    </a>
+                    <a href="{% url 'products' %}" class="{% if request.resolver_match.url_name == 'products' or request.resolver_match.url_name == 'product_detail' %}text-nicky-blue font-bold{% else %}text-gray-700 hover:text-nicky-blue font-medium{% endif %} transition-colors relative group">
+                        Shop
+                        <span class="absolute bottom-0 left-0 {% if request.resolver_match.url_name == 'products' or request.resolver_match.url_name == 'product_detail' %}w-full{% else %}w-0 group-hover:w-full{% endif %} h-0.5 bg-nicky-red transition-all"></span>
+                    </a>
+                    <a href="{% url 'services' %}" class="{% if request.resolver_match.url_name == 'services' %}text-nicky-blue font-bold{% else %}text-gray-700 hover:text-nicky-blue font-medium{% endif %} transition-colors relative group">
+                        Services
+                        <span class="absolute bottom-0 left-0 {% if request.resolver_match.url_name == 'services' %}w-full{% else %}w-0 group-hover:w-full{% endif %} h-0.5 bg-nicky-red transition-all"></span>
+                    </a>
+                    <a href="{% url 'about' %}" class="{% if request.resolver_match.url_name == 'about' %}text-nicky-blue font-bold{% else %}text-gray-700 hover:text-nicky-blue font-medium{% endif %} transition-colors relative group">
+                        About Us
+                        <span class="absolute bottom-0 left-0 {% if request.resolver_match.url_name == 'about' %}w-full{% else %}w-0 group-hover:w-full{% endif %} h-0.5 bg-nicky-red transition-all"></span>
+                    </a>
+                    <a href="{% url 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}text-nicky-blue font-bold{% else %}text-gray-700 hover:text-nicky-blue font-medium{% endif %} transition-colors relative group">
+                        Contact
+                        <span class="absolute bottom-0 left-0 {% if request.resolver_match.url_name == 'contact' %}w-full{% else %}w-0 group-hover:w-full{% endif %} h-0.5 bg-nicky-red transition-all"></span>
+                    </a>
+                </div>
+                
+                <!-- Cart and Mobile Menu -->
+                <div class="flex items-center space-x-4">
+                    <!-- Admin Login -->
+                    <a href="/admin/" class="hidden md:block text-gray-700 hover:text-nicky-blue font-medium transition-colors">
+                        <i class="fas fa-user-shield mr-1"></i>
+                        Admin
+                    </a>
+                    
+                    <!-- Search Button -->
+                    <button @click="searchOpen = true" class="text-gray-700 hover:text-nicky-blue transition-colors">
+                        <i class="fas fa-search text-lg"></i>
+                    </button>
+                    
+                    <!-- Cart Button -->
+                    <button @click="cartOpen = true" class="relative text-gray-700 hover:text-nicky-blue transition-colors">
+                        <i class="fas fa-shopping-cart text-lg"></i>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-nicky-red text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {{ cart_count|default:0 }}
+                        </span>
+                    </button>
+                    
+                    <!-- Mobile Menu Button -->
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-gray-700 hover:text-nicky-blue transition-colors">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile Navigation -->
+            <div x-show="mobileMenuOpen" x-transition class="md:hidden mt-4 pb-4 border-t border-gray-200">
+                <div class="flex flex-col space-y-2 pt-4">
+                    <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}text-nicky-blue font-bold border-l-4 border-nicky-red pl-3{% else %}text-gray-700 hover:text-nicky-blue font-medium{% endif %} py-2">Home</a>
+                    <a href="{% url 'products' %}" class="{% if request.resolver_match.url_name == 'products' or request.resolver_match.url_name == 'product_detail' %}text-nicky-blue font-bold border-l-4 border-nicky-red pl-3{% else %}text-gray-700 hover:text-nicky-blue font-medium{% endif %} py-2">Shop</a>
+                    <a href="{% url 'services' %}" class="{% if request.resolver_match.url_name == 'services' %}text-nicky-blue font-bold border-l-4 border-nicky-red pl-3{% else %}text-gray-700 hover:text-nicky-blue font-medium{% endif %} py-2">Services</a>
+                    <a href="{% url 'about' %}" class="{% if request.resolver_match.url_name == 'about' %}text-nicky-blue font-bold border-l-4 border-nicky-red pl-3{% else %}text-gray-700 hover:text-nicky-blue font-medium{% endif %} py-2">About Us</a>
+                    <a href="{% url 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}text-nicky-blue font-bold border-l-4 border-nicky-red pl-3{% else %}text-gray-700 hover:text-nicky-blue font-medium{% endif %} py-2">Contact</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-20" x-data="{ 
+        mobileMenuOpen: false, 
+        searchOpen: false, 
+        cartOpen: false,
+        cartItems: {{ cart_items|default:'[]'|safe }},
+        cartTotal: {{ cart_total|default:0 }}
+    }">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-nicky-blue text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Logo Section -->
+                <div class="space-y-4">
+                    <div class="flex flex-col items-start bg-white p-3 rounded-lg w-fit">
+                        <span class="text-xl font-bold text-nicky-blue leading-none">NickyG</span>
+                        <span class="text-xs text-gray-600 font-medium leading-none mt-1">COMPUTERS</span>
+                    </div>
+                    <p class="text-gray-300">Your trusted technology partner in Wa, Ghana.</p>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="text-nicky-yellow font-bold text-lg mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'home' %}" class="text-gray-300 hover:text-nicky-yellow transition-colors">Home</a></li>
+                        <li><a href="{% url 'products' %}" class="text-gray-300 hover:text-nicky-yellow transition-colors">Products</a></li>
+                        <li><a href="{% url 'services' %}" class="text-gray-300 hover:text-nicky-yellow transition-colors">Services</a></li>
+                        <li><a href="{% url 'about' %}" class="text-gray-300 hover:text-nicky-yellow transition-colors">About Us</a></li>
+                        <li><a href="{% url 'contact' %}" class="text-gray-300 hover:text-nicky-yellow transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Services -->
+                <div>
+                    <h3 class="text-nicky-yellow font-bold text-lg mb-4">Services</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li>Computer Sales & Repairs</li>
+                        <li>Phone Sales & Repairs</li>
+                        <li>Internet Cafe</li>
+                        <li>WAEC Registration</li>
+                        <li>Printing Services</li>
+                    </ul>
+                </div>
+                
+                <!-- Contact Info -->
+                <div>
+                    <h3 class="text-nicky-yellow font-bold text-lg mb-4">Contact Info</h3>
+                    <div class="space-y-2 text-gray-300">
+                        <p class="flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                            </svg>
+                            <a href="tel:+233247644599" class="hover:text-nicky-yellow transition-colors">+233 24 764 4599</a>
+                        </p>
+                        <p class="flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                            </svg>
+                            <a href="mailto:nickygcomputers@gmail.com" class="hover:text-nicky-yellow transition-colors">nickygcomputers@gmail.com</a>
+                        </p>
+                        <p class="flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                            </svg>
+                            <a href="https://maps.google.com/?q=10.062369,-2.502214" target="_blank" class="hover:text-nicky-yellow transition-colors">Wa, Upper West Region</a>
+                        </p>
+                        <p class="flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.893 3.488"/>
+                            </svg>
+                            <a href="#" onclick="openWhatsAppGeneral()" class="hover:text-nicky-yellow transition-colors">WhatsApp: 0204288305</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-600 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 Nicky G. Computers. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Modal -->
+    <div x-show="cartOpen" x-transition.opacity x-cloak class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div @click.away="cartOpen = false" class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-nicky-blue to-nicky-light-blue text-white p-6 rounded-t-lg">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">Shopping Cart</h2>
+                    <button @click="cartOpen = false" class="text-white hover:text-gray-300 text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-6">
+                <!-- Cart View -->
+                <div id="cart-view">
+                    <div id="cart-items-container">
+                        <!-- Cart items will be loaded here -->
+                    </div>
+                    
+                    <div class="bg-gray-100 p-4 rounded-lg my-4">
+                        <h3 class="text-xl font-bold text-nicky-blue text-center">
+                            Total: GH₵ <span id="cart-total-display">0.00</span>
+                        </h3>
+                    </div>
+                    <button onclick="showCartView()" class="mb-4 text-nicky-blue hover:text-blue-800 font-medium">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Cart
+                    </button>
+                    
+                    <form id="order-form" class="space-y-4">
+                        {% csrf_token %}
+                        <h3 class="text-lg font-bold text-nicky-blue">Your Information</h3>
+                        
+                        <div>
+                            <input type="text" name="name" placeholder="Full Name" required 
+                                   class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-nicky-blue focus:outline-none">
+                        </div>
+                        
+                        <div>
+                            <input type="tel" name="phone" placeholder="Phone Number" required 
+                                   class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-nicky-blue focus:outline-none">
+                        </div>
+                        
+                        <div>
+                            <textarea name="message" placeholder="Additional message or delivery instructions" rows="3"
+                                      class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-nicky-blue focus:outline-none"></textarea>
+                        </div>
+                        
+                        <div class="bg-gray-100 p-4 rounded-lg">
+                            <h4 class="font-bold text-nicky-blue mb-2">Order Total: GH₵ <span id="checkout-total-display">0.00</span></h4>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-gradient-to-r from-nicky-blue to-nicky-light-blue text-white py-3 rounded-lg font-bold hover:shadow-lg transition-all">
+                            Place Order
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Confirmation Modal -->
+    <div id="confirmation-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-nicky-blue to-nicky-light-blue text-white p-6 rounded-t-lg">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">Order Placed Successfully!</h2>
+                    <button onclick="closeConfirmationModal()" class="text-white hover:text-gray-300 text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-6 text-center">
+                <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+                <h3 class="text-2xl font-bold text-nicky-blue mb-4">Thank you for your order!</h3>
+                <p class="text-gray-600 mb-6">Please complete your payment using Mobile Money:</p>
+                
+                <div class="bg-gray-100 p-6 rounded-lg mb-6 text-left">
+                    <h4 class="font-bold text-nicky-blue mb-4">Payment Details:</h4>
+                    <p class="mb-2"><strong>MoMo Number:</strong> 0597427569</p>
+                    <p class="mb-2"><strong>Amount:</strong> GH₵ <span id="final-total">0.00</span></p>
+                    <p class="mb-2"><strong>Reference:</strong> <span id="order-reference"></span></p>
+                </div>
+                
+                <div class="text-left mb-6">
+                    <h4 class="font-bold text-nicky-blue mb-4">Next Steps:</h4>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                        <li>Send the payment to the MoMo number above</li>
+                        <li>Call or WhatsApp us at <strong>0204288305</strong> after payment</li>
+                        <li>Provide your order reference number</li>
+                        <li>We'll confirm your order and arrange pickup/delivery</li>
+                    </ol>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="tel:0204288305" class="bg-gradient-to-r from-nicky-blue to-nicky-light-blue text-white px-6 py-3 rounded-lg font-bold hover:shadow-lg transition-all">
+                        Call Now
+                    </a>
+                    <a href="#" onclick="openWhatsAppGeneral()" class="border-2 border-nicky-blue text-nicky-blue px-6 py-3 rounded-lg font-bold hover:bg-nicky-blue hover:text-white transition-all">
+                        WhatsApp
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Modal -->
+    <div x-show="searchOpen" x-transition.opacity x-cloak class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div @click.away="searchOpen = false" class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-nicky-blue to-nicky-light-blue text-white p-6 rounded-t-lg">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">Search Products</h2>
+                    <button @click="searchOpen = false" class="text-white hover:text-gray-300 text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-6">
+                <div class="flex gap-2 mb-6">
+                    <input type="text" id="search-input" placeholder="Search for products..." 
+                           class="flex-1 p-3 border-2 border-gray-300 rounded-lg focus:border-nicky-blue focus:outline-none">
+                    <button onclick="performSearch()" class="bg-gradient-to-r from-nicky-blue to-nicky-light-blue text-white px-6 py-3 rounded-lg font-bold hover:shadow-lg transition-all">
+                        Search
+                    </button>
+                </div>
+                <div id="search-results" class="max-h-96 overflow-y-auto"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script>
+        // Cart functionality
+        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        
+        // Prevent cart modal from flashing on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ensure cart modal is closed on page load
+            const alpineData = document.querySelector('[x-data]');
+            if (alpineData && alpineData.__x) {
+                alpineData.__x.$data.cartOpen = false;
+            }
+        });
+        
+        // WhatsApp message generator
+        function generateWhatsAppMessage(context, data = {}) {
+            const baseUrl = 'https://wa.me/233204288305?text=';
+            let message = '';
+            
+            switch(context) {
+                case 'product_inquiry':
+                    message = `Hi Nicky G. Computers! 👋\n\nI'm interested in the ${data.productName} (${data.productId}) priced at GH₵ ${data.price}.\n\nCould you please provide more details about:\n- Availability\n- Warranty information\n- Payment options\n\nThank you!`;
+                    break;
+                    
+                case 'service_inquiry':
+                    message = `Hi Nicky G. Computers! 👋\n\nI need information about your ${data.serviceName} service.\n\nPrice range: ${data.priceRange}\nDuration: ${data.duration}\n\nCould you help me with:\n- Scheduling an appointment\n- Exact pricing\n- What to bring\n\nThank you!`;
+                    break;
+                    
+                case 'cart_order':
+                    const itemsList = data.items.map(item => `- ${item.name} (Qty: ${item.quantity}) - GH₵ ${(item.price * item.quantity).toFixed(2)}`).join('\n');
+                    message = `Hi Nicky G. Computers! 👋\n\nI'd like to place an order:\n\n${itemsList}\n\nTotal: GH₵ ${data.total.toFixed(2)}\n\nPlease confirm availability and let me know the next steps for payment and delivery.\n\nCustomer: ${data.customerName}\nPhone: ${data.customerPhone}\n\nThank you!`;
+                    break;
+                    
+                case 'repair_inquiry':
+                    message = `Hi Nicky G. Computers! 👋\n\nI need computer repair services.\n\nIssue: ${data.issue || 'General repair needed'}\nDevice: ${data.device || 'Computer/Laptop'}\n\nCould you help with:\n- Diagnosis and quote\n- Repair timeline\n- Pickup/drop-off options\n\nThank you!`;
+                    break;
+                    
+                case 'waec_registration':
+                    message = `Hi Nicky G. Computers! 👋\n\nI need help with WAEC registration.\n\nCould you assist with:\n- Registration process\n- Required documents\n- Fees and payment\n- Timeline\n\nThank you!`;
+                    break;
+                    
+                case 'general_contact':
+                    message = `Hi Nicky G. Computers! 👋\n\nI'm interested in your products and services. Could you please provide more information?\n\nThank you!`;
+                    break;
+                    
+                default:
+                    message = `Hi Nicky G. Computers! 👋\n\nI'm contacting you from your website. Please let me know how you can help.\n\nThank you!`;
+            }
+            
+            return baseUrl + encodeURIComponent(message);
+        }
+        
+        // WhatsApp helper functions
+        function openWhatsAppProductInquiry(productId, productName, productPrice) {
+            const url = generateWhatsAppMessage('product_inquiry', {
+                productId: productId,
+                productName: productName,
+                price: productPrice
+            });
+            window.open(url, '_blank');
+        }
+        
+        function openWhatsAppServiceInquiry(serviceName, priceRange, duration) {
+            const url = generateWhatsAppMessage('service_inquiry', {
+                serviceName: serviceName,
+                priceRange: priceRange,
+                duration: duration
+            });
+            window.open(url, '_blank');
+        }
+        
+        function openWhatsAppCartOrder() {
+            if (cart.length === 0) {
+                showNotification('Your cart is empty!', 'error');
+                return;
+            }
+            
+            const customerName = document.querySelector('input[name="name"]')?.value || 'Customer';
+            const customerPhone = document.querySelector('input[name="phone"]')?.value || 'Not provided';
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            const url = generateWhatsAppMessage('cart_order', {
+                items: cart,
+                total: total,
+                customerName: customerName,
+                customerPhone: customerPhone
+            });
+            window.open(url, '_blank');
+        }
+        
+        function openWhatsAppRepairInquiry() {
+            const url = generateWhatsAppMessage('repair_inquiry');
+            window.open(url, '_blank');
+        }
+        
+        function openWhatsAppWAECInquiry() {
+            const url = generateWhatsAppMessage('waec_registration');
+            window.open(url, '_blank');
+        }
+        
+        function openWhatsAppGeneral() {
+            const url = generateWhatsAppMessage('general_contact');
+            window.open(url, '_blank');
+        }
+        
+        
+        function addToCart(productId, productName, productPrice) {
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id: productId,
+                    name: productName,
+                    price: parseFloat(productPrice),
+                    quantity: 1
+                });
+            }
+            
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartDisplay();
+            renderCartItems(); // Add this to refresh cart display
+            showNotification(`${productName} added to cart!`);
+        }
+        
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartDisplay();
+            renderCartItems();
+        }
+        
+        function updateCartQuantity(productId, quantity) {
+            const item = cart.find(item => item.id === productId);
+            if (item) {
+                item.quantity = Math.max(1, quantity);
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartDisplay();
+                renderCartItems();
+            }
+        }
+        
+        function updateCartDisplay() {
+            const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            // Update cart count in header
+            const cartCountElement = document.querySelector('.fa-shopping-cart').parentElement.querySelector('span');
+            if (cartCountElement) {
+                cartCountElement.textContent = cartCount;
+                cartCountElement.style.display = cartCount > 0 ? 'flex' : 'none';
+            }
+            
+            // Update cart total displays
+            const cartTotalElement = document.getElementById('cart-total-display');
+            if (cartTotalElement) {
+                cartTotalElement.textContent = cartTotal.toFixed(2);
+            }
+            
+            const checkoutTotalElement = document.getElementById('checkout-total-display');
+            if (checkoutTotalElement) {
+                checkoutTotalElement.textContent = cartTotal.toFixed(2);
+            }
+        }
+        
+        function showCheckoutForm() {
+            if (cart.length === 0) {
+                showNotification('Your cart is empty!', 'error');
+                return;
+            }
+            document.getElementById('cart-view').classList.add('hidden');
+            document.getElementById('checkout-view').classList.remove('hidden');
+            updateCartDisplay();
+        }
+        
+        function showCartView() {
+            document.getElementById('checkout-view').classList.add('hidden');
+            document.getElementById('cart-view').classList.remove('hidden');
+        }
+        
+        function renderCartItems() {
+            const container = document.getElementById('cart-items-container');
+            if (!container) {
+                console.log('Cart container not found');
+                return;
+            }
+            
+            console.log('Rendering cart items:', cart);
+            
+            if (cart.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">Your cart is empty</p>';
+                return;
+            }
+            
+            const cartHTML = cart.map(item => `
+                <div class="flex justify-between items-center py-4 border-b border-gray-200 last:border-b-0">
+                    <div class="flex-1">
+                        <h4 class="font-bold text-gray-800">${item.name}</h4>
+                        <p class="text-sm text-gray-600">GH₵ ${item.price.toFixed(2)} each</p>
+                        <div class="flex items-center space-x-2 mt-2">
+                            <button onclick="updateCartQuantity('${item.id}', ${item.quantity - 1})" 
+                                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 w-8 h-8 rounded-full flex items-center justify-center font-bold">-</button>
+                            <span class="font-medium px-3">${item.quantity}</span>
+                            <button onclick="updateCartQuantity('${item.id}', ${item.quantity + 1})" 
+                                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 w-8 h-8 rounded-full flex items-center justify-center font-bold">+</button>
+                        </div>
+                    </div>
+                    <div class="text-right ml-4">
+                        <p class="font-bold text-nicky-red text-lg">GH₵ ${(item.price * item.quantity).toFixed(2)}</p>
+                        <button onclick="removeFromCart('${item.id}')" 
+                                class="text-red-500 hover:text-red-700 text-sm mt-1 underline">Remove</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = cartHTML;
+            console.log('Cart HTML rendered:', cartHTML);
+        }
+        
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-24 right-4 z-50 p-4 rounded-lg shadow-lg text-white ${type === 'error' ? 'bg-red-500' : 'bg-green-500'}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        function closeConfirmationModal() {
+            document.getElementById('confirmation-modal').classList.add('hidden');
+        }
+        
+        // Initialize cart display on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load cart from localStorage
+            cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            updateCartDisplay();
+            renderCartItems();
+            
+            // Ensure modals are closed on page load and cart view is shown
+            const alpineData = document.querySelector('[x-data]');
+            if (alpineData && alpineData.__x) {
+                alpineData.__x.$data.cartOpen = false;
+                alpineData.__x.$data.searchOpen = false;
+            }
+            
+            // Ensure cart view is shown by default
+            showCartView();
+        });
+        
+        // Order form submission - use event delegation since form might not exist on initial load
+        document.addEventListener('submit', function(e) {
+            if (e.target.id !== 'order-form') return;
+            e.preventDefault();
+            
+            if (cart.length === 0) {
+                showNotification('Your cart is empty!', 'error');
+                return;
+            }
+            
+            const formData = new FormData(e.target);
+            const orderData = {
+                customerName: formData.get('name'),
+                customerPhone: formData.get('phone'),
+                customerMessage: formData.get('message'),
+                items: cart,
+                total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                orderReference: generateOrderReference()
+            };
+            
+            // Show confirmation modal
+            document.getElementById('final-total').textContent = orderData.total.toFixed(2);
+            document.getElementById('order-reference').textContent = orderData.orderReference;
+            document.getElementById('confirmation-modal').classList.remove('hidden');
+            
+            // Clear cart
+            cart = [];
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartDisplay();
+            renderCartItems();
+            
+            // Close cart modal and reset to cart view
+            document.querySelector('[x-data]').__x.$data.cartOpen = false;
+            showCartView();
+            
+            // Reset form
+            e.target.reset();
+        });
+        
+        function generateOrderReference() {
+            const timestamp = Date.now().toString().slice(-6);
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            return `NG${timestamp}${random}`;
+        }
+        
+        // Search functionality
+        function performSearch() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            const resultsContainer = document.getElementById('search-results');
+            
+            if (!query) {
+                resultsContainer.innerHTML = '<p class="text-gray-500">Please enter a search term</p>';
+                return;
+            }
+            
+            // This would normally make an AJAX request to Django backend
+            // For now, we'll show a placeholder
+            resultsContainer.innerHTML = '<p class="text-gray-500">Search functionality will be connected to Django backend</p>';
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
