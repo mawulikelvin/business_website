@@ -336,3 +336,4 @@ def admin_login_redirect(request):
     """Redirect to admin login"""
     from django.shortcuts import redirect
     return redirect('/admin/')
+
