@@ -30,6 +30,9 @@ class Product(models.Model):
     short_description = models.TextField(max_length=500)
     long_description = models.TextField()
     image = models.ImageField(upload_to='products/', blank=True, null=True)
+    # Optional: filename for a static image committed to the repo under static/products/
+    # Example: "laptop-123.jpg" (do not include leading slashes)
+    image_static = models.CharField(max_length=255, blank=True)
     stock = models.PositiveIntegerField(default=0)
     sku = models.CharField(max_length=50, unique=True, blank=True)
     is_featured = models.BooleanField(default=False)

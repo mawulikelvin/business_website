@@ -30,6 +30,11 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
 
+# If running on Render, include the external hostname automatically
+RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
 
 # Application definition
 
@@ -79,9 +84,11 @@ WSGI_APPLICATION = 'nickyg_computers.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # Database configuration
-if config('DATABASE_URL', default=None):
+DATABASE_URL = config('DATABASE_URL', default=None)
+if DATABASE_URL:
+    # Use persistent connections and require SSL for managed Postgres (e.g., Render)
     DATABASES = {
-        'default': dj_database_url.parse(config('DATABASE_URL'))
+        'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600, ssl_require=True)
     }
 else:
     DATABASES = {
@@ -144,7 +151,11 @@ STORAGES = {
 
 # Media files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# Allow overriding MEDIA_ROOT via env var (e.g., to use a Render persistent disk mounted at /media)
+MEDIA_ROOT = Path(config('MEDIA_ROOT', default=str(BASE_DIR / 'media')))
+
+# Optional flag: if true, urls.py will serve media even when not in DEBUG (suitable for small sites)
+SERVE_MEDIA = config('SERVE_MEDIA', default=False, cast=bool)
 
 # Email Configuration
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
@@ -167,6 +178,21 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     X_FRAME_OPTIONS = 'DENY'
+
+# Ensure Django knows the original protocol/host when behind a proxy (e.g., Render)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# CSRF trusted origins (include Render domain and any others provided)
+_csrf_origins = set()
+for host in ALLOWED_HOSTS:
+    if host in ('localhost', '127.0.0.1'):
+        _csrf_origins.add('http://localhost')
+        _csrf_origins.add('http://127.0.0.1')
+        _csrf_origins.add('http://localhost:8000')
+        _csrf_origins.add('http://127.0.0.1:8000')
+    else:
+        _csrf_origins.add(f"https://{host}")
+CSRF_TRUSTED_ORIGINS = sorted(_csrf_origins)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

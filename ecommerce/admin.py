@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html, mark_safe
 from django.urls import reverse
+from django.templatetags.static import static
 from .models import Category, Product, Service, Customer, Order, OrderItem, ContactMessage
 
 # Custom Admin Site Configuration
@@ -38,7 +39,7 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': ('short_description', 'long_description')
         }),
         ('Image', {
-            'fields': ('image', 'image_preview')
+            'fields': ('image', 'image_static', 'image_preview')
         }),
         ('Status', {
             'fields': ('is_featured', 'is_active')
@@ -63,6 +64,10 @@ class ProductAdmin(admin.ModelAdmin):
     stock_status.short_description = 'Stock Status'
     
     def image_preview(self, obj):
+        # Prefer static image if provided
+        if getattr(obj, 'image_static', None):
+            url = static(f"products/{obj.image_static}")
+            return format_html('<img src="{}" width="100" height="100" style="object-fit: cover;" />', url)
         if obj.image:
             return format_html('<img src="{}" width="100" height="100" style="object-fit: cover;" />', obj.image.url)
         return "No image"
